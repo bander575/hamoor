@@ -1,182 +1,124 @@
 (() => {
-  const SAVE_KEY = "hamoor-browser-phase1";
-  const CAPACITY = 25;
-  const CAST_TIME = 2600;
-  const CAST_COOLDOWN = 4800;
-  const WORLD = { width: 1800, height: 1400 };
-
-  const rarityArabic = {
-    Common: "عادي",
-    Uncommon: "غير شائع",
-    Rare: "نادر",
-    Epic: "ملحمي",
-    Legendary: "أسطوري",
-    Mythic: "خرافي",
-  };
-
-  const fishCatalog = [
-    { id: "Sardine", name: "سردين", rarity: "Common", value: 4, xp: 3, sprite: "fish_blue" },
-    { id: "Tilapia", name: "بلطي", rarity: "Common", value: 5, xp: 3, sprite: "fish_green" },
-    { id: "Macarona", name: "مكرونة", rarity: "Common", value: 6, xp: 4, sprite: "fish_orange" },
-    { id: "Shaoor", name: "شعور", rarity: "Uncommon", value: 12, xp: 8, sprite: "fish_pink" },
-    { id: "Najil", name: "ناجل", rarity: "Uncommon", value: 14, xp: 9, sprite: "fish_red" },
-    { id: "Kingfish", name: "كنعد", rarity: "Uncommon", value: 16, xp: 10, sprite: "fish_long" },
-    { id: "Hamoor", name: "هامور", rarity: "Rare", value: 32, xp: 20, sprite: "fish_blue" },
-    { id: "Shaari", name: "شعري", rarity: "Rare", value: 28, xp: 18, sprite: "fish_green" },
-    { id: "Seabass", name: "سيباس", rarity: "Rare", value: 35, xp: 22, sprite: "fish_orange" },
-    { id: "Tuna", name: "تونة", rarity: "Epic", value: 75, xp: 42, sprite: "fish_red" },
-    { id: "Marlin", name: "مارلن", rarity: "Legendary", value: 180, xp: 90, sprite: "fish_long" },
-    { id: "BabyShark", name: "قرش صغير", rarity: "Mythic", value: 350, xp: 150, sprite: "fish_long" },
-  ];
-
-  const rarityChances = [
-    ["Common", 58],
-    ["Uncommon", 25],
-    ["Rare", 11],
-    ["Epic", 4],
-    ["Legendary", 1.5],
-    ["Mythic", 0.5],
-  ];
-
-  const zones = [
-    { name: "منطقة السردين", x: 520, y: 430, radius: 145 },
-    { name: "منطقة الشعاب", x: 1160, y: 480, radius: 165 },
-    { name: "المياه العميقة", x: 1260, y: 980, radius: 190 },
-  ];
-
-  const merchant = { x: 365, y: 1030 };
-  const dock = { x: 260, y: 850, width: 470, height: 270 };
-
-  const els = {
-    coins: document.getElementById("coins"),
-    level: document.getElementById("level"),
-    xp: document.getElementById("xp"),
-    bag: document.getElementById("bag-count"),
-    inventory: document.getElementById("inventory-list"),
-    toast: document.getElementById("toast"),
-    cast: document.getElementById("cast-btn"),
-    board: document.getElementById("board-btn"),
-    sell: document.getElementById("sell-btn"),
-  };
+  const SAVE_KEY = "hamoor-harbor-screen";
+  const WORLD = { width: 1600, height: 1100 };
+  const PLAYER_SPEED = 180;
 
   const state = loadState();
-  let gameScene;
+  const els = {
+    coins: document.getElementById("coins"),
+    gems: document.getElementById("gems"),
+    menu: document.getElementById("menu-btn"),
+    prompt: document.getElementById("prompt"),
+    toast: document.getElementById("toast"),
+    modal: document.getElementById("menu-modal"),
+    modalTitle: document.getElementById("modal-title"),
+    modalBody: document.getElementById("modal-body"),
+    modalClose: document.getElementById("modal-close"),
+  };
+
   let toastTimer;
+  let audioStarted = false;
+
+  const interactions = [
+    {
+      id: "fish-market",
+      title: "سوق السمك",
+      prompt: "اضغط E لدخول سوق السمك",
+      body: "هنا يبيع الصيادون صيد اليوم. السوق مغلق للشراء والبيع في هذه المرحلة، لكن المكان جاهز كمنطقة افتتاحية.",
+      x: 428,
+      y: 720,
+      radius: 92,
+    },
+    {
+      id: "boat-shop",
+      title: "محل القوارب",
+      prompt: "اضغط E لدخول محل القوارب",
+      body: "قوارب خشبية وشباك بحرية معروضة للصيادين. المكان جاهز للزيارة والتجول داخل الميناء.",
+      x: 782,
+      y: 712,
+      radius: 88,
+    },
+    {
+      id: "warehouse",
+      title: "المستودع",
+      prompt: "اضغط E لتفقد المستودع",
+      body: "صناديق وبراميل ومعدات بحرية. المستودع يعطي الميناء إحساس العمل والحركة.",
+      x: 1056,
+      y: 640,
+      radius: 90,
+    },
+    {
+      id: "lighthouse",
+      title: "المنارة",
+      prompt: "اضغط E لتفقد المنارة",
+      body: "منارة الميناء ترشد القوارب وقت الغروب. لا توجد مهام هنا الآن.",
+      x: 1210,
+      y: 300,
+      radius: 90,
+    },
+  ];
+
+  const npcLines = [
+    { name: "سالم الصياد", line: "البحر هادئ اليوم. الميناء يستعد ليوم صيد طويل." },
+    { name: "نورة البائعة", line: "سوق السمك يفتح قريبًا. الرائحة هنا تقول إن الصيد وفير." },
+    { name: "ماجد الحارس", line: "انتبه قرب الأرصفة، القوارب تتحرك مع الموج." },
+    { name: "راشد البحّار", line: "أسمع النوارس؟ هذا صوت الميناء وهو صاحي." },
+  ];
 
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
       if (saved && typeof saved === "object") {
-        return {
-          coins: Number(saved.coins) || 0,
-          xp: Number(saved.xp) || 0,
-          inventory: saved.inventory && typeof saved.inventory === "object" ? saved.inventory : {},
-          currentBoat: saved.currentBoat || "WoodBoat",
-        };
+        return { coins: Number(saved.coins) || 0, gems: Number(saved.gems) || 0 };
       }
     } catch (_) {
       localStorage.removeItem(SAVE_KEY);
     }
-    return { coins: 0, xp: 0, inventory: {}, currentBoat: "WoodBoat" };
+    return { coins: 0, gems: 0 };
   }
 
   function saveState() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
   }
 
-  function getLevelInfo(xp) {
-    let level = 1;
-    let needed = 100;
-    let remaining = xp;
-    while (remaining >= needed) {
-      remaining -= needed;
-      level += 1;
-      needed = Math.floor(needed * 1.25);
-    }
-    return { level, remaining, needed };
-  }
-
-  function inventoryCount() {
-    return Object.values(state.inventory).reduce((sum, value) => sum + value, 0);
+  function updateHud() {
+    els.coins.textContent = state.coins;
+    els.gems.textContent = state.gems;
+    saveState();
   }
 
   function showToast(message) {
     els.toast.textContent = message;
     els.toast.classList.add("show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2800);
+    toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2600);
   }
 
-  function updateHud() {
-    const info = getLevelInfo(state.xp);
-    els.coins.textContent = state.coins;
-    els.level.textContent = info.level;
-    els.xp.textContent = `${info.remaining} / ${info.needed}`;
-    els.bag.textContent = `${inventoryCount()} / ${CAPACITY}`;
-
-    els.inventory.innerHTML = "";
-    for (const fish of fishCatalog) {
-      const amount = state.inventory[fish.id] || 0;
-      if (!amount) continue;
-      const row = document.createElement("div");
-      row.className = "fish-row";
-      row.innerHTML = `
-        <img alt="${fish.name}" src="./assets/fish/${spriteFile(fish.sprite)}.png" />
-        <div><strong>${fish.name} × ${amount}</strong><span>${rarityArabic[fish.rarity]} • ${fish.value} عملة</span></div>
-      `;
-      els.inventory.appendChild(row);
-    }
-
-    if (!els.inventory.children.length) {
-      const row = document.createElement("div");
-      row.className = "fish-row";
-      row.innerHTML = `<img alt="" src="./assets/fish/fish_blue.png" /><div><strong>الحقيبة فارغة</strong><span>اركب القارب واذهب لمنطقة صيد</span></div>`;
-      els.inventory.appendChild(row);
-    }
-
-    saveState();
+  function showModal(title, body) {
+    els.modalTitle.textContent = title;
+    els.modalBody.textContent = body;
+    els.modal.classList.remove("hidden");
   }
 
-  function spriteFile(key) {
-    return {
-      fish_blue: "fish_blue",
-      fish_green: "fish_green",
-      fish_orange: "fish_orange",
-      fish_pink: "fish_pink",
-      fish_red: "fish_red",
-      fish_long: "fish_grey_long_b",
-    }[key] || key;
-  }
-
-  function rollFish() {
-    const roll = Math.random() * 100;
-    let total = 0;
-    let rarity = "Common";
-    for (const [name, chance] of rarityChances) {
-      total += chance;
-      if (roll <= total) {
-        rarity = name;
-        break;
-      }
-    }
-    const pool = fishCatalog.filter((fish) => fish.rarity === rarity);
-    return pool[Math.floor(Math.random() * pool.length)];
+  function hideModal() {
+    els.modal.classList.add("hidden");
   }
 
   function distance(a, b) {
     return Math.hypot(a.x - b.x, a.y - b.y);
   }
 
-  class MainScene extends Phaser.Scene {
+  class HarborScene extends Phaser.Scene {
     constructor() {
-      super("main");
+      super("harbor");
       this.keys = null;
       this.mobile = { up: false, down: false, left: false, right: false };
-      this.inBoat = false;
-      this.isCasting = false;
-      this.lastCast = 0;
-      this.fishSprites = [];
+      this.npcs = [];
+      this.boats = [];
       this.bubbles = [];
+      this.waves = [];
+      this.seagulls = [];
+      this.currentInteraction = null;
     }
 
     preload() {
@@ -188,9 +130,13 @@
       this.load.image("dockPostB", "./assets/tiles/dock_post_b.png");
       this.load.image("roofA", "./assets/tiles/roof_blue_a.png");
       this.load.image("roofB", "./assets/tiles/roof_blue_b.png");
+      this.load.image("shopRoof", "./assets/tiles/shop_roof.png");
       this.load.image("wallWood", "./assets/tiles/wall_wood_a.png");
       this.load.image("door", "./assets/tiles/door.png");
       this.load.image("sign", "./assets/tiles/shop_sign.png");
+      this.load.image("marketSign", "./assets/tiles/market_sign.png");
+      this.load.image("stoneWall", "./assets/tiles/stone_wall.png");
+      this.load.image("lighthouseWindow", "./assets/tiles/lighthouse_window.png");
       this.load.image("player", "./assets/characters/player.png");
       this.load.image("merchant", "./assets/characters/merchant.png");
       this.load.image("boat", "./assets/decor/boat_row.png");
@@ -198,268 +144,321 @@
       this.load.image("treePurple", "./assets/decor/tree_purple.png");
       this.load.image("rockA", "./assets/decor/rock_a.png");
       this.load.image("rockB", "./assets/decor/rock_b.png");
-      this.load.image("seaweedA", "./assets/decor/seaweed_green_a.png");
-      this.load.image("seaweedB", "./assets/decor/seaweed_orange_a.png");
+      this.load.image("barrel", "./assets/decor/barrel.png");
+      this.load.image("crate", "./assets/decor/crate.png");
+      this.load.image("netHook", "./assets/decor/net_hook.png");
+      this.load.image("tool", "./assets/decor/harbor_tool.png");
       this.load.image("bubbleA", "./assets/decor/bubble_a.png");
       this.load.image("bubbleB", "./assets/decor/bubble_b.png");
-      this.load.image("fish_blue", "./assets/fish/fish_blue.png");
-      this.load.image("fish_green", "./assets/fish/fish_green.png");
-      this.load.image("fish_orange", "./assets/fish/fish_orange.png");
-      this.load.image("fish_pink", "./assets/fish/fish_pink.png");
-      this.load.image("fish_red", "./assets/fish/fish_red.png");
-      this.load.image("fish_long", "./assets/fish/fish_grey_long_b.png");
+      this.load.image("seagull", "./assets/decor/seagull.png");
     }
 
     create() {
-      gameScene = this;
       this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
       this.physics.world.setBounds(0, 0, WORLD.width, WORLD.height);
 
-      this.add.tileSprite(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, "water").setScale(4).setDepth(0);
-      this.createLand();
-      this.createDecor();
-      this.createFishingZones();
-
-      this.merchant = this.add.image(merchant.x, merchant.y, "merchant").setScale(1.45).setDepth(20);
-      this.add.text(merchant.x, merchant.y - 54, "تاجر الأسماك", textStyle(18)).setOrigin(0.5).setDepth(21);
-
-      this.boat = this.physics.add.image(420, 745, "boat").setScale(2.6).setDepth(12);
-      this.boat.body.setSize(58, 28);
-      this.boat.setDrag(0.94);
-      this.boat.setMaxVelocity(250);
-
-      this.player = this.physics.add.image(360, 1010, "player").setScale(1.2).setDepth(30);
-      this.player.body.setSize(34, 36);
-      this.player.setCollideWorldBounds(true);
+      this.buildWater();
+      this.buildHarborGround();
+      this.buildDocks();
+      this.buildBuildings();
+      this.buildDecor();
+      this.buildBoats();
+      this.buildNpcs();
+      this.buildPlayer();
+      this.buildSeagulls();
 
       this.keys = this.input.keyboard.addKeys({
         up: "W,UP",
         down: "S,DOWN",
         left: "A,LEFT",
         right: "D,RIGHT",
-        board: "E",
-        cast: "F",
-        sell: "R",
+        interact: "E",
       });
+      this.keys.interact.on("down", () => this.interact());
 
-      this.keys.board.on("down", () => this.toggleBoat());
-      this.keys.cast.on("down", () => this.castNet());
-      this.keys.sell.on("down", () => this.sellAll());
-      this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
       wireDomControls(this);
       updateHud();
-      showToast("أهلاً بك في هامور البحر");
+      showToast("مرحبًا بك في ميناء هامور البحر");
     }
 
-    createLand() {
-      for (let x = 80; x <= 740; x += 64) {
-        for (let y = 760; y <= 1220; y += 64) {
-          this.add.image(x, y, y < 885 ? "sand" : "grass").setScale(4).setDepth(1);
-        }
-      }
+    buildWater() {
+      this.water = this.add.tileSprite(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, "water")
+        .setScale(4)
+        .setDepth(0);
 
-      for (let x = 230; x <= 610; x += 64) {
-        for (let y = 640; y <= 830; y += 64) {
-          this.add.image(x, y, "dock").setScale(4).setDepth(4);
-        }
-      }
-
-      for (let x = 220; x <= 620; x += 96) {
-        this.add.image(x, 625, "dockPostA").setScale(4).setDepth(5);
-        this.add.image(x, 846, "dockPostB").setScale(4).setDepth(5);
-      }
-
-      this.add.image(330, 952, "roofA").setScale(4).setDepth(7);
-      this.add.image(394, 952, "roofB").setScale(4).setDepth(7);
-      this.add.image(330, 1016, "wallWood").setScale(4).setDepth(7);
-      this.add.image(394, 1016, "door").setScale(4).setDepth(8);
-      this.add.image(362, 1080, "sign").setScale(4).setDepth(9);
-    }
-
-    createDecor() {
-      const items = [
-        [170, 980, "treeOrange", 4],
-        [670, 1030, "treePurple", 4],
-        [125, 1180, "treePurple", 4],
-        [700, 1185, "treeOrange", 4],
-        [770, 735, "rockA", 2.2],
-        [135, 705, "rockB", 2.2],
-        [940, 410, "seaweedA", 2.1],
-        [1235, 660, "seaweedB", 2.1],
-        [1320, 1120, "rockA", 2.2],
-      ];
-      for (const [x, y, key, scale] of items) {
-        this.add.image(x, y, key).setScale(scale).setDepth(8);
-      }
-
-      for (let i = 0; i < 36; i++) {
-        const bubble = this.add.image(260 + Math.random() * 1300, 240 + Math.random() * 900, i % 2 ? "bubbleA" : "bubbleB")
-          .setScale(1.1 + Math.random() * 0.8)
-          .setAlpha(0.55)
-          .setDepth(2);
+      for (let i = 0; i < 52; i++) {
+        const bubble = this.add.image(140 + Math.random() * 1320, 70 + Math.random() * 920, i % 2 ? "bubbleA" : "bubbleB")
+          .setScale(0.9 + Math.random() * 0.7)
+          .setAlpha(0.28)
+          .setDepth(1);
         bubble.baseY = bubble.y;
-        bubble.speed = 0.7 + Math.random() * 1.1;
+        bubble.speed = 0.6 + Math.random() * 1.2;
         this.bubbles.push(bubble);
       }
+
+      for (let i = 0; i < 28; i++) {
+        const wave = this.add.image(120 + Math.random() * 1360, 80 + Math.random() * 860, "bubbleA")
+          .setScale(1.2 + Math.random() * 1.8, 0.35)
+          .setAlpha(0.16)
+          .setDepth(2);
+        wave.baseX = wave.x;
+        wave.phase = Math.random() * 10;
+        this.waves.push(wave);
+      }
     }
 
-    createFishingZones() {
-      zones.forEach((zone, zi) => {
-        this.add.text(zone.x, zone.y - zone.radius - 28, zone.name, textStyle(20)).setOrigin(0.5).setDepth(15);
-        for (let i = 0; i < 9; i++) {
-          const angle = (Math.PI * 2 * i) / 9;
-          const fish = this.add.image(
-            zone.x + Math.cos(angle) * zone.radius * 0.58,
-            zone.y + Math.sin(angle) * zone.radius * 0.45,
-            ["fish_blue", "fish_green", "fish_orange", "fish_pink", "fish_red", "fish_long"][(i + zi) % 6],
-          ).setScale(1.2).setDepth(6);
-          fish.baseX = fish.x;
-          fish.baseY = fish.y;
-          fish.phase = i * 0.7 + zi;
-          this.fishSprites.push(fish);
+    buildHarborGround() {
+      for (let x = 80; x <= 1160; x += 64) {
+        for (let y = 570; y <= 1030; y += 64) {
+          const key = y < 700 || x > 1000 ? "sand" : "grass";
+          this.add.image(x, y, key).setScale(4).setDepth(3);
         }
+      }
+
+      for (let x = 80; x <= 450; x += 64) {
+        for (let y = 410; y <= 605; y += 64) {
+          this.add.image(x, y, "sand").setScale(4).setDepth(3);
+        }
+      }
+    }
+
+    buildDocks() {
+      const dockRows = [
+        { x1: 160, x2: 700, y1: 470, y2: 595 },
+        { x1: 680, x2: 900, y1: 360, y2: 485 },
+        { x1: 250, x2: 470, y1: 305, y2: 430 },
+      ];
+
+      for (const row of dockRows) {
+        for (let x = row.x1; x <= row.x2; x += 64) {
+          for (let y = row.y1; y <= row.y2; y += 64) {
+            this.add.image(x, y, "dock").setScale(4).setDepth(6);
+          }
+        }
+      }
+
+      for (let x = 150; x <= 930; x += 96) {
+        this.add.image(x, 440, "dockPostA").setScale(4).setDepth(7);
+        this.add.image(x, 615, "dockPostB").setScale(4).setDepth(7);
+      }
+    }
+
+    buildBuildings() {
+      this.buildBuilding(390, 720, "سوق السمك", "marketSign", "roofA", "roofB");
+      this.buildBuilding(780, 710, "محل القوارب", "sign", "shopRoof", "roofB");
+      this.buildWarehouse(1040, 640);
+      this.buildLighthouse(1210, 300);
+    }
+
+    buildBuilding(x, y, label, signKey, leftRoof, rightRoof) {
+      this.add.image(x - 32, y - 48, leftRoof).setScale(4).setDepth(10);
+      this.add.image(x + 32, y - 48, rightRoof).setScale(4).setDepth(10);
+      this.add.image(x - 32, y + 16, "wallWood").setScale(4).setDepth(10);
+      this.add.image(x + 32, y + 16, "door").setScale(4).setDepth(11);
+      this.add.image(x, y + 78, signKey).setScale(3.4).setDepth(12);
+      this.add.text(x, y - 106, label, textStyle(20)).setOrigin(0.5).setDepth(30);
+    }
+
+    buildWarehouse(x, y) {
+      for (let ox = -64; ox <= 64; ox += 64) {
+        this.add.image(x + ox, y - 36, "stoneWall").setScale(4).setDepth(10);
+        this.add.image(x + ox, y + 28, "wallWood").setScale(4).setDepth(10);
+      }
+      this.add.image(x, y + 32, "door").setScale(4).setDepth(11);
+      this.add.text(x, y - 104, "المستودع", textStyle(20)).setOrigin(0.5).setDepth(30);
+    }
+
+    buildLighthouse(x, y) {
+      for (let i = 0; i < 4; i++) {
+        this.add.image(x, y + i * 56, "stoneWall").setScale(3.6).setDepth(9 + i);
+      }
+      this.add.image(x, y + 56, "lighthouseWindow").setScale(3.6).setDepth(13);
+      const light = this.add.image(x, y - 45, "bubbleA").setScale(3.2).setAlpha(0.45).setDepth(8);
+      this.tweens.add({ targets: light, alpha: 0.12, scale: 4.2, duration: 1500, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      this.add.text(x, y - 92, "المنارة", textStyle(20)).setOrigin(0.5).setDepth(30);
+    }
+
+    buildDecor() {
+      const decor = [
+        [190, 760, "treeOrange", 4], [145, 910, "treePurple", 4], [860, 900, "treeOrange", 4],
+        [1180, 760, "treePurple", 4], [1120, 500, "rockA", 2.2], [1320, 420, "rockB", 2.2],
+        [535, 650, "barrel", 3.6], [585, 650, "crate", 3.6], [960, 740, "crate", 3.8],
+        [1010, 745, "barrel", 3.6], [630, 430, "netHook", 3.2], [710, 430, "tool", 3.2],
+        [300, 520, "crate", 3.4], [350, 525, "barrel", 3.3], [890, 420, "netHook", 3.2],
+      ];
+      for (const [x, y, key, scale] of decor) {
+        this.add.image(x, y, key).setScale(scale).setDepth(y);
+      }
+    }
+
+    buildBoats() {
+      const boatData = [
+        [300, 255, -0.15, 2.8],
+        [650, 300, 0.08, 3.1],
+        [910, 260, -0.2, 2.6],
+        [1040, 420, 0.18, 2.9],
+      ];
+
+      for (const [x, y, rotation, scale] of boatData) {
+        const reflection = this.add.image(x, y + 18, "boat").setScale(scale, scale * 0.8).setRotation(rotation).setAlpha(0.18).setTint(0x236f91).setDepth(3);
+        const boat = this.add.image(x, y, "boat").setScale(scale).setRotation(rotation).setDepth(8);
+        boat.baseY = y;
+        boat.phase = Math.random() * 6;
+        reflection.baseY = y + 18;
+        reflection.phase = boat.phase;
+        this.boats.push({ boat, reflection });
+      }
+    }
+
+    buildNpcs() {
+      const paths = [
+        [[350, 820], [520, 830], [560, 720], [410, 680]],
+        [[760, 820], [900, 790], [920, 650], [760, 620]],
+        [[250, 580], [520, 570], [620, 520], [300, 480]],
+        [[980, 820], [1150, 760], [1130, 610], [970, 620]],
+      ];
+
+      paths.forEach((path, index) => {
+        const npc = this.physics.add.image(path[0][0], path[0][1], "merchant").setScale(1.08).setDepth(40);
+        npc.body.setSize(24, 28);
+        npc.nameArabic = npcLines[index].name;
+        npc.line = npcLines[index].line;
+        npc.path = path;
+        npc.targetIndex = 1;
+        this.add.text(npc.x, npc.y - 44, npc.nameArabic, textStyle(14)).setOrigin(0.5).setDepth(45).setData("follow", npc);
+        this.npcs.push(npc);
       });
+    }
+
+    buildPlayer() {
+      this.player = this.physics.add.image(520, 860, "player").setScale(1.2).setDepth(50);
+      this.player.body.setSize(30, 34);
+      this.player.setCollideWorldBounds(true);
+      this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    }
+
+    buildSeagulls() {
+      for (let i = 0; i < 8; i++) {
+        const gull = this.add.image(150 + Math.random() * 1200, 120 + Math.random() * 260, "seagull")
+          .setScale(0.65)
+          .setAlpha(0.82)
+          .setDepth(60);
+        gull.baseX = gull.x;
+        gull.baseY = gull.y;
+        gull.phase = Math.random() * 10;
+        this.seagulls.push(gull);
+      }
     }
 
     update(_, delta) {
       const dt = delta / 1000;
-      this.updateMovement(dt);
-      this.updateAnimations();
-      this.updateButtons();
+      this.movePlayer();
+      this.moveNpcs(dt);
+      this.animateHarbor();
+      this.updatePrompt();
     }
 
-    updateMovement() {
+    movePlayer() {
       const input = {
         up: this.keys.up.isDown || this.mobile.up,
         down: this.keys.down.isDown || this.mobile.down,
         left: this.keys.left.isDown || this.mobile.left,
         right: this.keys.right.isDown || this.mobile.right,
       };
-
-      const target = this.inBoat ? this.boat : this.player;
-      const speed = this.inBoat ? 185 : 155;
       let vx = 0;
       let vy = 0;
-      if (input.up) vy -= speed;
-      if (input.down) vy += speed;
-      if (input.left) vx -= speed;
-      if (input.right) vx += speed;
-      target.setVelocity(vx, vy);
+      if (input.up) vy -= PLAYER_SPEED;
+      if (input.down) vy += PLAYER_SPEED;
+      if (input.left) vx -= PLAYER_SPEED;
+      if (input.right) vx += PLAYER_SPEED;
+      this.player.setVelocity(vx, vy);
+      this.player.x = Phaser.Math.Clamp(this.player.x, 80, 1250);
+      this.player.y = Phaser.Math.Clamp(this.player.y, 430, 1010);
+    }
 
-      if (!this.inBoat) {
-        this.player.setVisible(true);
-        this.player.setDepth(30);
-        this.boat.setDepth(12);
-        this.player.x = Phaser.Math.Clamp(this.player.x, 75, 760);
-        this.player.y = Phaser.Math.Clamp(this.player.y, 735, 1240);
-      } else {
-        this.player.setVisible(false);
-        this.player.setPosition(this.boat.x, this.boat.y);
-        this.cameras.main.startFollow(this.boat, true, 0.09, 0.09);
+    moveNpcs() {
+      for (const npc of this.npcs) {
+        const target = npc.path[npc.targetIndex];
+        const dx = target[0] - npc.x;
+        const dy = target[1] - npc.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 8) {
+          npc.targetIndex = (npc.targetIndex + 1) % npc.path.length;
+          npc.setVelocity(0, 0);
+        } else {
+          npc.setVelocity((dx / dist) * 48, (dy / dist) * 48);
+        }
+      }
+
+      for (const text of this.children.list) {
+        const follow = text.getData && text.getData("follow");
+        if (follow) {
+          text.setPosition(follow.x, follow.y - 44);
+        }
       }
     }
 
-    updateAnimations() {
+    animateHarbor() {
       const t = this.time.now / 1000;
-      for (const fish of this.fishSprites) {
-        fish.x = fish.baseX + Math.sin(t * 1.4 + fish.phase) * 22;
-        fish.y = fish.baseY + Math.cos(t * 1.1 + fish.phase) * 10;
-        fish.rotation = Math.sin(t * 1.2 + fish.phase) * 0.12;
+      this.water.tilePositionX += 0.18;
+      this.water.tilePositionY += 0.08;
+
+      for (const pair of this.boats) {
+        const bob = Math.sin(t * 1.5 + pair.boat.phase) * 5;
+        pair.boat.y = pair.boat.baseY + bob;
+        pair.boat.rotation += Math.sin(t + pair.boat.phase) * 0.0008;
+        pair.reflection.y = pair.reflection.baseY + bob * 0.6;
       }
+
       for (const bubble of this.bubbles) {
-        bubble.y = bubble.baseY + Math.sin(t * bubble.speed + bubble.x) * 14;
-        bubble.alpha = 0.35 + Math.sin(t * 1.7 + bubble.x) * 0.18;
+        bubble.y = bubble.baseY + Math.sin(t * bubble.speed + bubble.x) * 12;
+        bubble.alpha = 0.2 + Math.sin(t * 1.6 + bubble.x) * 0.12;
+      }
+
+      for (const wave of this.waves) {
+        wave.x = wave.baseX + Math.sin(t * 0.8 + wave.phase) * 18;
+        wave.alpha = 0.09 + Math.sin(t * 1.2 + wave.phase) * 0.05;
+      }
+
+      for (const gull of this.seagulls) {
+        gull.x = gull.baseX + Math.sin(t * 0.55 + gull.phase) * 80;
+        gull.y = gull.baseY + Math.cos(t * 0.8 + gull.phase) * 24;
+        gull.rotation = Math.sin(t * 1.1 + gull.phase) * 0.18;
       }
     }
 
-    updateButtons() {
-      els.board.textContent = this.inBoat ? "النزول" : "ركوب القارب";
-      els.sell.disabled = this.inBoat;
+    updatePrompt() {
+      const nearbyNpc = this.npcs.find((npc) => distance(this.player, npc) < 62);
+      if (nearbyNpc) {
+        this.currentInteraction = { type: "npc", npc: nearbyNpc };
+        setPrompt(`اضغط E للتحدث مع ${nearbyNpc.nameArabic}`);
+        return;
+      }
+
+      const area = interactions.find((item) => distance(this.player, item) < item.radius);
+      if (area) {
+        this.currentInteraction = { type: "area", area };
+        setPrompt(area.prompt);
+        return;
+      }
+
+      this.currentInteraction = null;
+      setPrompt("");
     }
 
-    toggleBoat() {
-      if (this.inBoat) {
-        this.inBoat = false;
-        this.player.setVisible(true);
-        this.player.setPosition(this.boat.x + 34, this.boat.y + 28);
-        this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
-        showToast("نزلت من القارب");
+    interact() {
+      startAmbientAudio();
+      if (!this.currentInteraction) {
+        showToast("تجوّل في الميناء واقترب من الشخصيات أو المباني");
         return;
       }
-      if (distance(this.player, this.boat) > 90) {
-        showToast("اقترب من القارب أولاً");
+      if (this.currentInteraction.type === "npc") {
+        const npc = this.currentInteraction.npc;
+        showModal(npc.nameArabic, npc.line);
         return;
       }
-      this.inBoat = true;
-      showToast("ركبت القارب");
-    }
-
-    activeZone() {
-      if (!this.inBoat) return null;
-      return zones.find((zone) => distance(this.boat, zone) <= zone.radius);
-    }
-
-    castNet() {
-      if (this.isCasting) return;
-      if (!this.inBoat) {
-        showToast("اركب القارب أولاً للصيد");
-        return;
-      }
-      const zone = this.activeZone();
-      if (!zone) {
-        showToast("اقترب من منطقة صيد");
-        return;
-      }
-      if (inventoryCount() >= CAPACITY) {
-        showToast("الحقيبة ممتلئة. بع الأسماك عند التاجر");
-        return;
-      }
-      if (Date.now() - this.lastCast < CAST_COOLDOWN) {
-        showToast("انتظر قليلاً قبل رمي الشبكة مرة أخرى");
-        return;
-      }
-
-      this.isCasting = true;
-      this.lastCast = Date.now();
-      showToast(`تم رمي الشبكة في ${zone.name}...`);
-
-      const marker = this.add.image(this.boat.x, this.boat.y, "bubbleA").setScale(2.8).setAlpha(0.85).setDepth(40);
-      this.tweens.add({ targets: marker, scale: 5.4, alpha: 0, duration: CAST_TIME, ease: "Sine.easeOut" });
-
-      this.time.delayedCall(CAST_TIME, () => {
-        const fish = rollFish();
-        state.inventory[fish.id] = (state.inventory[fish.id] || 0) + 1;
-        state.xp += fish.xp;
-        this.isCasting = false;
-        updateHud();
-        showToast(`اصطدت: ${fish.name} [${rarityArabic[fish.rarity]}]`);
-      });
-    }
-
-    sellAll() {
-      if (this.inBoat) {
-        showToast("انزل من القارب واقترب من التاجر للبيع");
-        return;
-      }
-      if (distance(this.player, merchant) > 120) {
-        showToast("اقترب من التاجر للبيع");
-        return;
-      }
-      let coins = 0;
-      let count = 0;
-      for (const fish of fishCatalog) {
-        const amount = state.inventory[fish.id] || 0;
-        coins += amount * fish.value;
-        count += amount;
-      }
-      if (!count) {
-        showToast("لا توجد أسماك للبيع");
-        return;
-      }
-      state.inventory = {};
-      state.coins += coins;
-      updateHud();
-      showToast(`بعت ${count} سمكة وحصلت على ${coins} عملة`);
+      const area = this.currentInteraction.area;
+      showModal(area.title, area.body);
     }
   }
 
@@ -474,10 +473,20 @@
     };
   }
 
+  function setPrompt(text) {
+    els.prompt.textContent = text;
+    els.prompt.classList.toggle("show", Boolean(text));
+  }
+
   function wireDomControls(scene) {
-    els.cast.addEventListener("click", () => scene.castNet());
-    els.board.addEventListener("click", () => scene.toggleBoat());
-    els.sell.addEventListener("click", () => scene.sellAll());
+    els.menu.addEventListener("click", () => {
+      startAmbientAudio();
+      showModal("قائمة الميناء", "هذه شاشة الميناء فقط. تجوّل، تحدث مع الصيادين، وادخل سوق السمك أو محل القوارب.");
+    });
+    els.modalClose.addEventListener("click", hideModal);
+    els.modal.addEventListener("click", (event) => {
+      if (event.target === els.modal) hideModal();
+    });
 
     document.querySelectorAll(".mobile-pad button").forEach((button) => {
       const dir = button.dataset.dir;
@@ -486,17 +495,79 @@
       };
       button.addEventListener("pointerdown", (event) => {
         event.preventDefault();
+        startAmbientAudio();
         set(true);
       });
       button.addEventListener("pointerup", () => set(false));
       button.addEventListener("pointerleave", () => set(false));
       button.addEventListener("pointercancel", () => set(false));
     });
+
+    window.addEventListener("pointerdown", startAmbientAudio, { once: true });
+  }
+
+  function startAmbientAudio() {
+    if (audioStarted) return;
+    audioStarted = true;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const oceanGain = ctx.createGain();
+    oceanGain.gain.value = 0.045;
+    oceanGain.connect(ctx.destination);
+
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = "lowpass";
+    lowpass.frequency.value = 420;
+    noise.connect(lowpass);
+    lowpass.connect(oceanGain);
+    noise.start();
+
+    const gull = () => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(950 + Math.random() * 260, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(520 + Math.random() * 180, ctx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.035, ctx.currentTime + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.55);
+      setTimeout(gull, 4500 + Math.random() * 6500);
+    };
+    setTimeout(gull, 1200);
+
+    const dockClank = () => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(150 + Math.random() * 90, ctx.currentTime);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.018, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.24);
+      setTimeout(dockClank, 2800 + Math.random() * 5000);
+    };
+    setTimeout(dockClank, 1800);
   }
 
   window.addEventListener("load", () => {
+    updateHud();
     if (!window.Phaser) {
-      document.body.innerHTML = "<p style='font:20px Tahoma;padding:24px'>تعذر تحميل Phaser. شغل الصفحة مع اتصال إنترنت أو أضف Phaser محلياً.</p>";
+      document.body.innerHTML = "<p style='font:20px Tahoma;padding:24px'>تعذر تحميل محرك Phaser المحلي.</p>";
       return;
     }
 
@@ -505,7 +576,7 @@
       parent: "game",
       width: window.innerWidth,
       height: window.innerHeight,
-      backgroundColor: "#6bd4ff",
+      backgroundColor: "#58c8f4",
       physics: {
         default: "arcade",
         arcade: { debug: false },
@@ -514,7 +585,7 @@
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
-      scene: MainScene,
+      scene: HarborScene,
       pixelArt: false,
       roundPixels: false,
     });

@@ -3,32 +3,29 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>هامور البحر</title>
+    <title>هامور البحر - الميناء</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <main id="game-shell">
       <div id="game"></div>
 
-      <section id="hud" aria-label="واجهة اللعبة">
-        <div class="panel stats-panel">
-          <div class="stat gold"><span>العملات</span><strong id="coins">0</strong></div>
-          <div class="stat"><span>المستوى</span><strong id="level">1</strong></div>
-          <div class="stat"><span>الخبرة</span><strong id="xp">0 / 100</strong></div>
-          <div class="stat"><span>الحقيبة</span><strong id="bag-count">0 / 25</strong></div>
+      <section id="hud" aria-label="واجهة الميناء">
+        <div class="top-hud">
+          <div class="currency-card"><span>العملات</span><strong id="coins">0</strong></div>
+          <div class="currency-card gems"><span>الجواهر</span><strong id="gems">0</strong></div>
+          <button id="menu-btn" class="asset-button">القائمة</button>
         </div>
 
-        <div class="panel inventory-panel">
-          <h1>حقيبة الأسماك</h1>
-          <div id="inventory-list" class="inventory-list"></div>
-        </div>
-
+        <div id="prompt" class="prompt"></div>
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-        <div class="action-bar">
-          <button id="cast-btn" class="asset-button">رمي الشبكة</button>
-          <button id="board-btn" class="asset-button">ركوب القارب</button>
-          <button id="sell-btn" class="asset-button red">بيع الكل</button>
+        <div id="menu-modal" class="modal hidden" role="dialog" aria-modal="true">
+          <div class="modal-card">
+            <h1 id="modal-title">القائمة</h1>
+            <p id="modal-body">مرحبًا بك في ميناء هامور البحر.</p>
+            <button id="modal-close" class="asset-button red">إغلاق</button>
+          </div>
         </div>
 
         <div class="mobile-pad" aria-label="تحكم الجوال">

@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
-  --ink: #fff7df;
-  --shadow: rgba(38, 24, 15, 0.38);
+  --ink: #fff8df;
+  --shadow: rgba(45, 28, 15, 0.42);
 }
 
 * {
@@ -14,8 +14,8 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: #6bd4ff;
-  font-family: Tahoma, "Arial", sans-serif;
+  background: #58c8f4;
+  font-family: Tahoma, Arial, sans-serif;
 }
 
 button {
@@ -35,132 +35,46 @@ canvas {
   pointer-events: none;
 }
 
-.panel {
-  pointer-events: auto;
-  color: var(--ink);
-  text-shadow: 0 2px 0 var(--shadow);
-  background-image: url("./assets/ui/panel_blue.png");
-  background-size: 100% 100%;
-  padding: 16px 18px;
-}
-
-.stats-panel {
+.top-hud {
   position: absolute;
   top: 16px;
   right: 16px;
-  width: min(310px, calc(100vw - 32px));
-  display: grid;
-  gap: 8px;
-}
-
-.stat {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-weight: 800;
-  font-size: 18px;
-}
-
-.stat strong {
-  color: #ffffff;
-}
-
-.stat.gold strong {
-  color: #ffe36b;
-}
-
-.inventory-panel {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  width: min(330px, calc(100vw - 32px));
-  height: min(420px, calc(100vh - 130px));
-  background-image: url("./assets/ui/panel_brown.png");
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.inventory-panel h1 {
-  margin: 0;
-  font-size: 24px;
-  text-align: center;
-}
-
-.inventory-list {
-  min-height: 0;
-  overflow: auto;
-  display: grid;
-  gap: 8px;
-  padding-left: 4px;
-}
-
-.fish-row {
-  min-height: 48px;
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  color: #fffbe9;
-  background-image: url("./assets/ui/panel_blue.png");
-  background-size: 100% 100%;
-  text-shadow: 0 2px 0 var(--shadow);
-}
-
-.fish-row img {
-  width: 46px;
-  height: 36px;
-  object-fit: contain;
-  image-rendering: auto;
-}
-
-.fish-row strong {
-  display: block;
-  font-size: 16px;
-}
-
-.fish-row span {
-  display: block;
-  font-size: 13px;
-  opacity: 0.9;
-}
-
-.toast {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-12px);
-  min-width: min(560px, calc(100vw - 32px));
-  padding: 14px 22px;
-  color: #fff8df;
-  text-align: center;
-  font-weight: 900;
-  font-size: 20px;
-  text-shadow: 0 2px 0 var(--shadow);
-  background-image: url("./assets/ui/panel_blue.png");
-  background-size: 100% 100%;
-  opacity: 0;
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.action-bar {
-  position: absolute;
-  right: 50%;
-  bottom: 18px;
-  transform: translateX(50%);
-  display: flex;
   gap: 12px;
   pointer-events: auto;
 }
 
+.currency-card {
+  min-width: 142px;
+  min-height: 58px;
+  padding: 10px 18px;
+  color: var(--ink);
+  text-shadow: 0 2px 0 var(--shadow);
+  background-image: url("./assets/ui/panel_blue.png");
+  background-size: 100% 100%;
+}
+
+.currency-card span {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0.92;
+}
+
+.currency-card strong {
+  display: block;
+  color: #ffe36b;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.currency-card.gems strong {
+  color: #8df5ff;
+}
+
 .asset-button {
-  min-width: 150px;
+  min-width: 126px;
   height: 58px;
   border: 0;
   color: #fff7df;
@@ -169,6 +83,7 @@ canvas {
   font-size: 18px;
   font-weight: 900;
   cursor: pointer;
+  pointer-events: auto;
   transition: transform 120ms ease, filter 120ms ease;
 }
 
@@ -185,6 +100,86 @@ canvas {
 .asset-button:active {
   transform: translateY(1px) scale(0.97);
   filter: brightness(0.92);
+}
+
+.prompt {
+  position: absolute;
+  right: 50%;
+  bottom: 24px;
+  min-width: min(560px, calc(100vw - 32px));
+  transform: translateX(50%);
+  padding: 14px 22px;
+  color: var(--ink);
+  text-align: center;
+  font-size: 20px;
+  font-weight: 900;
+  text-shadow: 0 2px 0 var(--shadow);
+  background-image: url("./assets/ui/panel_blue.png");
+  background-size: 100% 100%;
+  opacity: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.prompt.show {
+  opacity: 1;
+  transform: translateX(50%) translateY(-4px);
+}
+
+.toast {
+  position: absolute;
+  top: 88px;
+  right: 50%;
+  min-width: min(540px, calc(100vw - 32px));
+  transform: translateX(50%) translateY(-10px);
+  padding: 14px 22px;
+  color: var(--ink);
+  text-align: center;
+  font-size: 19px;
+  font-weight: 900;
+  text-shadow: 0 2px 0 var(--shadow);
+  background-image: url("./assets/ui/panel_blue.png");
+  background-size: 100% 100%;
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(50%) translateY(0);
+}
+
+.modal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(24, 62, 84, 0.25);
+  pointer-events: auto;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-card {
+  width: min(520px, calc(100vw - 32px));
+  padding: 28px 32px 24px;
+  color: var(--ink);
+  text-align: center;
+  text-shadow: 0 2px 0 var(--shadow);
+  background-image: url("./assets/ui/panel_brown.png");
+  background-size: 100% 100%;
+}
+
+.modal-card h1 {
+  margin: 0 0 12px;
+  font-size: 30px;
+}
+
+.modal-card p {
+  margin: 0 0 22px;
+  font-size: 19px;
+  line-height: 1.7;
 }
 
 .mobile-pad {
@@ -218,36 +213,34 @@ canvas {
   gap: 6px;
 }
 
-@media (max-width: 860px), (pointer: coarse) {
-  .inventory-panel {
-    top: auto;
-    bottom: 88px;
-    left: 10px;
-    width: 260px;
-    height: 245px;
-  }
-
-  .stats-panel {
-    right: 10px;
+@media (max-width: 760px), (pointer: coarse) {
+  .top-hud {
     top: 10px;
-    width: 245px;
+    right: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 20px);
   }
 
-  .stat {
-    font-size: 15px;
+  .currency-card {
+    min-width: 112px;
+    min-height: 52px;
+    padding: 8px 14px;
   }
 
-  .action-bar {
-    left: 10px;
-    right: auto;
-    transform: none;
-    bottom: 12px;
+  .currency-card strong {
+    font-size: 20px;
   }
 
   .asset-button {
-    min-width: 108px;
-    height: 52px;
+    min-width: 104px;
+    height: 50px;
     font-size: 15px;
+  }
+
+  .prompt {
+    bottom: 14px;
+    font-size: 16px;
   }
 
   .mobile-pad {
