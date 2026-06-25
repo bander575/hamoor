@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>هامور البحر</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main id="game-shell">
+      <div id="game"></div>
+
+      <section id="hud" aria-label="واجهة اللعبة">
+        <div class="panel stats-panel">
+          <div class="stat gold"><span>العملات</span><strong id="coins">0</strong></div>
+          <div class="stat"><span>المستوى</span><strong id="level">1</strong></div>
+          <div class="stat"><span>الخبرة</span><strong id="xp">0 / 100</strong></div>
+          <div class="stat"><span>الحقيبة</span><strong id="bag-count">0 / 25</strong></div>
+        </div>
+
+        <div class="panel inventory-panel">
+          <h1>حقيبة الأسماك</h1>
+          <div id="inventory-list" class="inventory-list"></div>
+        </div>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div class="action-bar">
+          <button id="cast-btn" class="asset-button">رمي الشبكة</button>
+          <button id="board-btn" class="asset-button">ركوب القارب</button>
+          <button id="sell-btn" class="asset-button red">بيع الكل</button>
+        </div>
+
+        <div class="mobile-pad" aria-label="تحكم الجوال">
+          <button data-dir="up">▲</button>
+          <div>
+            <button data-dir="right">▶</button>
+            <button data-dir="down">▼</button>
+            <button data-dir="left">◀</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./vendor/phaser.min.js"></script>
+    <script src="./game.js"></script>
+  </body>
+</html>

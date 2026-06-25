@@ -1,0 +1,256 @@
+:root {
+  color-scheme: light;
+  --ink: #fff7df;
+  --shadow: rgba(38, 24, 15, 0.38);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #6bd4ff;
+  font-family: Tahoma, "Arial", sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+#game-shell,
+#game,
+canvas {
+  width: 100vw;
+  height: 100vh;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.panel {
+  pointer-events: auto;
+  color: var(--ink);
+  text-shadow: 0 2px 0 var(--shadow);
+  background-image: url("./assets/ui/panel_blue.png");
+  background-size: 100% 100%;
+  padding: 16px 18px;
+}
+
+.stats-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: min(310px, calc(100vw - 32px));
+  display: grid;
+  gap: 8px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.stat strong {
+  color: #ffffff;
+}
+
+.stat.gold strong {
+  color: #ffe36b;
+}
+
+.inventory-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: min(330px, calc(100vw - 32px));
+  height: min(420px, calc(100vh - 130px));
+  background-image: url("./assets/ui/panel_brown.png");
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inventory-panel h1 {
+  margin: 0;
+  font-size: 24px;
+  text-align: center;
+}
+
+.inventory-list {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  padding-left: 4px;
+}
+
+.fish-row {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  color: #fffbe9;
+  background-image: url("./assets/ui/panel_blue.png");
+  background-size: 100% 100%;
+  text-shadow: 0 2px 0 var(--shadow);
+}
+
+.fish-row img {
+  width: 46px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.fish-row strong {
+  display: block;
+  font-size: 16px;
+}
+
+.fish-row span {
+  display: block;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.toast {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  min-width: min(560px, calc(100vw - 32px));
+  padding: 14px 22px;
+  color: #fff8df;
+  text-align: center;
+  font-weight: 900;
+  font-size: 20px;
+  text-shadow: 0 2px 0 var(--shadow);
+  background-image: url("./assets/ui/panel_blue.png");
+  background-size: 100% 100%;
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.action-bar {
+  position: absolute;
+  right: 50%;
+  bottom: 18px;
+  transform: translateX(50%);
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.asset-button {
+  min-width: 150px;
+  height: 58px;
+  border: 0;
+  color: #fff7df;
+  background: transparent url("./assets/ui/button_brown.png") center / 100% 100% no-repeat;
+  text-shadow: 0 2px 0 var(--shadow);
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.asset-button.red {
+  background-image: url("./assets/ui/button_red.png");
+}
+
+.asset-button:hover,
+.asset-button:focus-visible {
+  transform: translateY(-3px) scale(1.04);
+  filter: brightness(1.08);
+}
+
+.asset-button:active {
+  transform: translateY(1px) scale(0.97);
+  filter: brightness(0.92);
+}
+
+.mobile-pad {
+  position: absolute;
+  right: 18px;
+  bottom: 96px;
+  display: none;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.mobile-pad,
+.mobile-pad div {
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobile-pad button {
+  width: 48px;
+  height: 42px;
+  border: 0;
+  color: #fff;
+  background: transparent url("./assets/ui/button_brown.png") center / 100% 100% no-repeat;
+  text-shadow: 0 2px 0 var(--shadow);
+  font-weight: 900;
+}
+
+.mobile-pad div {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 6px;
+}
+
+@media (max-width: 860px), (pointer: coarse) {
+  .inventory-panel {
+    top: auto;
+    bottom: 88px;
+    left: 10px;
+    width: 260px;
+    height: 245px;
+  }
+
+  .stats-panel {
+    right: 10px;
+    top: 10px;
+    width: 245px;
+  }
+
+  .stat {
+    font-size: 15px;
+  }
+
+  .action-bar {
+    left: 10px;
+    right: auto;
+    transform: none;
+    bottom: 12px;
+  }
+
+  .asset-button {
+    min-width: 108px;
+    height: 52px;
+    font-size: 15px;
+  }
+
+  .mobile-pad {
+    display: flex;
+  }
+}
