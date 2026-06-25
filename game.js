@@ -1,6 +1,6 @@
 (() => {
   const SAVE_KEY = "hamoor-harbor-screen";
-  const WORLD = { width: 1600, height: 1100 };
+  const WORLD = { width: 5600, height: 3800 };
   const PLAYER_SPEED = 180;
 
   const state = loadState();
@@ -25,36 +25,36 @@
       title: "سوق السمك",
       prompt: "اضغط E لدخول سوق السمك",
       body: "هنا يبيع الصيادون صيد اليوم. السوق مغلق للشراء والبيع في هذه المرحلة، لكن المكان جاهز كمنطقة افتتاحية.",
-      x: 428,
-      y: 720,
-      radius: 92,
+      x: 880,
+      y: 2320,
+      radius: 130,
     },
     {
       id: "boat-shop",
       title: "محل القوارب",
       prompt: "اضغط E لدخول محل القوارب",
       body: "قوارب خشبية وشباك بحرية معروضة للصيادين. المكان جاهز للزيارة والتجول داخل الميناء.",
-      x: 782,
-      y: 712,
-      radius: 88,
+      x: 2260,
+      y: 2100,
+      radius: 130,
     },
     {
       id: "warehouse",
       title: "المستودع",
       prompt: "اضغط E لتفقد المستودع",
       body: "صناديق وبراميل ومعدات بحرية. المستودع يعطي الميناء إحساس العمل والحركة.",
-      x: 1056,
-      y: 640,
-      radius: 90,
+      x: 3620,
+      y: 1940,
+      radius: 140,
     },
     {
       id: "lighthouse",
       title: "المنارة",
       prompt: "اضغط E لتفقد المنارة",
       body: "منارة الميناء ترشد القوارب وقت الغروب. لا توجد مهام هنا الآن.",
-      x: 1210,
-      y: 300,
-      radius: 90,
+      x: 4740,
+      y: 940,
+      radius: 150,
     },
   ];
 
@@ -181,13 +181,27 @@
       showToast("مرحبًا بك في ميناء هامور البحر");
     }
 
+    tileArea(x1, y1, x2, y2, key, scale = 4, depth = 3, step = 64) {
+      for (let x = x1; x <= x2; x += step) {
+        for (let y = y1; y <= y2; y += step) {
+          this.add.image(x, y, key).setScale(scale).setDepth(depth);
+        }
+      }
+    }
+
+    scatter(items) {
+      for (const [x, y, key, scale = 3, depth = y] of items) {
+        this.add.image(x, y, key).setScale(scale).setDepth(depth);
+      }
+    }
+
     buildWater() {
       this.water = this.add.tileSprite(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, "water")
         .setScale(4)
         .setDepth(0);
 
-      for (let i = 0; i < 52; i++) {
-        const bubble = this.add.image(140 + Math.random() * 1320, 70 + Math.random() * 920, i % 2 ? "bubbleA" : "bubbleB")
+      for (let i = 0; i < 130; i++) {
+        const bubble = this.add.image(160 + Math.random() * 5200, 90 + Math.random() * 2450, i % 2 ? "bubbleA" : "bubbleB")
           .setScale(0.9 + Math.random() * 0.7)
           .setAlpha(0.28)
           .setDepth(1);
@@ -196,8 +210,8 @@
         this.bubbles.push(bubble);
       }
 
-      for (let i = 0; i < 28; i++) {
-        const wave = this.add.image(120 + Math.random() * 1360, 80 + Math.random() * 860, "bubbleA")
+      for (let i = 0; i < 84; i++) {
+        const wave = this.add.image(120 + Math.random() * 5280, 80 + Math.random() * 2360, "bubbleA")
           .setScale(1.2 + Math.random() * 1.8, 0.35)
           .setAlpha(0.16)
           .setDepth(2);
@@ -208,25 +222,38 @@
     }
 
     buildHarborGround() {
-      for (let x = 80; x <= 1160; x += 64) {
-        for (let y = 570; y <= 1030; y += 64) {
-          const key = y < 700 || x > 1000 ? "sand" : "grass";
-          this.add.image(x, y, key).setScale(4).setDepth(3);
-        }
-      }
+      this.tileArea(160, 1780, 5280, 3540, "grass", 4, 3);
+      this.tileArea(160, 1220, 5280, 1840, "sand", 4, 4);
+      this.tileArea(160, 900, 920, 1150, "sand", 4, 4);
+      this.tileArea(1180, 820, 1950, 1150, "sand", 4, 4);
+      this.tileArea(2300, 760, 3160, 1150, "sand", 4, 4);
+      this.tileArea(3380, 720, 4200, 1180, "sand", 4, 4);
+      this.tileArea(4480, 760, 5200, 1220, "sand", 4, 4);
 
-      for (let x = 80; x <= 450; x += 64) {
-        for (let y = 410; y <= 605; y += 64) {
-          this.add.image(x, y, "sand").setScale(4).setDepth(3);
-        }
+      const coast = [
+        [220, 1100], [420, 1050], [640, 1080], [880, 1160], [1140, 1120], [1400, 1040],
+        [1680, 1080], [1940, 1160], [2240, 1080], [2520, 1040], [2800, 1100], [3100, 1120],
+        [3400, 1100], [3660, 1040], [3940, 1060], [4240, 1180], [4560, 1110], [4860, 1020],
+        [5140, 1120],
+      ];
+      for (const [x, y] of coast) {
+        this.add.image(x, y, "sand").setScale(4).setDepth(5);
+        this.add.image(x + 44, y + 42, "grass").setScale(4).setDepth(4);
       }
     }
 
     buildDocks() {
       const dockRows = [
-        { x1: 160, x2: 700, y1: 470, y2: 595 },
-        { x1: 680, x2: 900, y1: 360, y2: 485 },
-        { x1: 250, x2: 470, y1: 305, y2: 430 },
+        { x1: 300, x2: 960, y1: 850, y2: 1030 },
+        { x1: 520, x2: 720, y1: 560, y2: 840 },
+        { x1: 1280, x2: 1940, y1: 780, y2: 980 },
+        { x1: 1500, x2: 1700, y1: 500, y2: 760 },
+        { x1: 2360, x2: 3040, y1: 740, y2: 960 },
+        { x1: 2630, x2: 2840, y1: 470, y2: 730 },
+        { x1: 3400, x2: 4100, y1: 850, y2: 1040 },
+        { x1: 3720, x2: 3920, y1: 590, y2: 830 },
+        { x1: 4520, x2: 5200, y1: 850, y2: 1040 },
+        { x1: 4860, x2: 5060, y1: 590, y2: 830 },
       ];
 
       for (const row of dockRows) {
@@ -237,17 +264,34 @@
         }
       }
 
-      for (let x = 150; x <= 930; x += 96) {
-        this.add.image(x, 440, "dockPostA").setScale(4).setDepth(7);
-        this.add.image(x, 615, "dockPostB").setScale(4).setDepth(7);
+      for (const row of dockRows) {
+        for (let x = row.x1; x <= row.x2; x += 128) {
+          this.add.image(x, row.y1 - 34, "dockPostA").setScale(4).setDepth(7);
+          this.add.image(x, row.y2 + 34, "dockPostB").setScale(4).setDepth(7);
+        }
       }
     }
 
     buildBuildings() {
-      this.buildBuilding(390, 720, "سوق السمك", "marketSign", "roofA", "roofB");
-      this.buildBuilding(780, 710, "محل القوارب", "sign", "shopRoof", "roofB");
-      this.buildWarehouse(1040, 640);
-      this.buildLighthouse(1210, 300);
+      this.buildBuilding(880, 2320, "سوق السمك", "marketSign", "roofA", "roofB");
+      this.buildBuilding(2260, 2100, "محل القوارب", "sign", "shopRoof", "roofB");
+      this.buildWarehouse(3620, 1940);
+      this.buildLighthouse(4740, 940);
+
+      const decorativeBuildings = [
+        [520, 2120, "بيت الصيادين", "roofA", "roofB"],
+        [620, 2880, "مقهى الميناء", "shopRoof", "roofB"],
+        [1420, 2840, "مكتب الشحن", "roofA", "shopRoof"],
+        [1840, 2520, "ورشة الحبال", "shopRoof", "roofA"],
+        [2840, 2820, "مخزن الشباك", "roofB", "roofA"],
+        [3180, 2300, "مركز الحراسة", "shopRoof", "roofB"],
+        [4120, 2520, "بيت القبطان", "roofA", "roofB"],
+        [4860, 2200, "دكان الحبال", "shopRoof", "roofA"],
+        [4720, 3040, "استراحة البحارة", "roofB", "shopRoof"],
+      ];
+      for (const [x, y, label, leftRoof, rightRoof] of decorativeBuildings) {
+        this.buildBuilding(x, y, label, "sign", leftRoof, rightRoof);
+      }
     }
 
     buildBuilding(x, y, label, signKey, leftRoof, rightRoof) {
@@ -280,23 +324,43 @@
 
     buildDecor() {
       const decor = [
-        [190, 760, "treeOrange", 4], [145, 910, "treePurple", 4], [860, 900, "treeOrange", 4],
-        [1180, 760, "treePurple", 4], [1120, 500, "rockA", 2.2], [1320, 420, "rockB", 2.2],
-        [535, 650, "barrel", 3.6], [585, 650, "crate", 3.6], [960, 740, "crate", 3.8],
-        [1010, 745, "barrel", 3.6], [630, 430, "netHook", 3.2], [710, 430, "tool", 3.2],
-        [300, 520, "crate", 3.4], [350, 525, "barrel", 3.3], [890, 420, "netHook", 3.2],
+        [360, 1980, "treeOrange", 4], [450, 3180, "treePurple", 4], [780, 3280, "treeOrange", 4],
+        [1160, 2020, "treePurple", 4], [1510, 2460, "treeOrange", 4], [2390, 2600, "treePurple", 4],
+        [3320, 3080, "treeOrange", 4], [3860, 2380, "treePurple", 4], [3440, 1280, "treeOrange", 4],
+        [4280, 2920, "treePurple", 4], [5120, 2580, "treeOrange", 4], [5060, 1340, "treePurple", 4],
+        [300, 1210, "rockA", 2.2], [810, 1120, "rockB", 2.2], [1260, 1010, "rockA", 2.2],
+        [2040, 1120, "rockB", 2.2], [3180, 1040, "rockA", 2.2], [3860, 1180, "rockB", 2.2],
+        [4320, 1280, "rockA", 2.2], [5220, 1220, "rockB", 2.2],
+        [720, 2200, "barrel", 3.6], [780, 2200, "crate", 3.6], [1040, 2200, "crate", 3.8],
+        [1110, 2220, "barrel", 3.6], [1840, 2020, "netHook", 3.2], [1920, 2020, "tool", 3.2],
+        [2460, 2020, "crate", 3.4], [2540, 2025, "barrel", 3.3], [3280, 1860, "netHook", 3.2],
+        [3380, 1860, "crate", 3.4], [3480, 1860, "barrel", 3.5], [3740, 1860, "crate", 3.4],
+        [3860, 2080, "barrel", 3.5], [3980, 2080, "crate", 3.5], [4520, 2140, "tool", 3.2],
+        [4560, 2800, "crate", 3.5], [4660, 2800, "barrel", 3.5], [4940, 2420, "netHook", 3.2],
+        [5060, 2420, "crate", 3.4], [1220, 3100, "barrel", 3.5], [1300, 3100, "crate", 3.5],
+        [2140, 2920, "tool", 3.2], [2220, 2920, "netHook", 3.2], [2920, 2460, "crate", 3.4],
+        [550, 910, "barrel", 3.4], [610, 910, "crate", 3.4], [690, 910, "netHook", 3.2],
+        [1450, 720, "crate", 3.4], [1530, 720, "barrel", 3.4], [2740, 690, "tool", 3.2],
+        [2820, 690, "netHook", 3.2], [3600, 680, "crate", 3.4], [3710, 680, "barrel", 3.4],
       ];
-      for (const [x, y, key, scale] of decor) {
-        this.add.image(x, y, key).setScale(scale).setDepth(y);
-      }
+      this.scatter(decor);
     }
 
     buildBoats() {
       const boatData = [
-        [300, 255, -0.15, 2.8],
-        [650, 300, 0.08, 3.1],
-        [910, 260, -0.2, 2.6],
-        [1040, 420, 0.18, 2.9],
+        [430, 650, -0.14, 2.9],
+        [700, 640, 0.1, 3.1],
+        [1030, 840, -0.22, 2.7],
+        [1420, 560, 0.08, 2.9],
+        [1710, 565, -0.1, 3.0],
+        [2200, 820, 0.16, 2.8],
+        [2520, 560, -0.08, 2.9],
+        [2860, 560, 0.12, 3.2],
+        [3500, 660, -0.16, 2.7],
+        [3900, 660, 0.1, 2.9],
+        [4540, 660, -0.08, 2.8],
+        [4920, 650, 0.14, 3.1],
+        [5260, 820, -0.18, 2.7],
       ];
 
       for (const [x, y, rotation, scale] of boatData) {
@@ -312,17 +376,21 @@
 
     buildNpcs() {
       const paths = [
-        [[350, 820], [520, 830], [560, 720], [410, 680]],
-        [[760, 820], [900, 790], [920, 650], [760, 620]],
-        [[250, 580], [520, 570], [620, 520], [300, 480]],
-        [[980, 820], [1150, 760], [1130, 610], [970, 620]],
+        [[520, 2140], [820, 2200], [940, 2360], [620, 2460]],
+        [[1840, 2140], [2260, 2060], [2420, 2260], [2020, 2380]],
+        [[3260, 1940], [3600, 1840], [3880, 2040], [3420, 2180]],
+        [[4520, 1220], [4840, 1180], [5000, 1440], [4620, 1540]],
+        [[680, 3060], [1160, 3000], [1380, 3220], [860, 3380]],
+        [[2740, 2740], [3180, 2520], [3460, 2800], [3020, 3060]],
+        [[4020, 2500], [4440, 2380], [4820, 2600], [4300, 2840]],
       ];
 
       paths.forEach((path, index) => {
         const npc = this.physics.add.image(path[0][0], path[0][1], "merchant").setScale(1.08).setDepth(40);
         npc.body.setSize(24, 28);
-        npc.nameArabic = npcLines[index].name;
-        npc.line = npcLines[index].line;
+        const line = npcLines[index % npcLines.length];
+        npc.nameArabic = line.name;
+        npc.line = line.line;
         npc.path = path;
         npc.targetIndex = 1;
         this.add.text(npc.x, npc.y - 44, npc.nameArabic, textStyle(14)).setOrigin(0.5).setDepth(45).setData("follow", npc);
@@ -331,15 +399,16 @@
     }
 
     buildPlayer() {
-      this.player = this.physics.add.image(520, 860, "player").setScale(1.2).setDepth(50);
+      this.player = this.physics.add.image(760, 2480, "player").setScale(1.2).setDepth(50);
       this.player.body.setSize(30, 34);
       this.player.setCollideWorldBounds(true);
       this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+      this.cameras.main.setZoom(1.08);
     }
 
     buildSeagulls() {
-      for (let i = 0; i < 8; i++) {
-        const gull = this.add.image(150 + Math.random() * 1200, 120 + Math.random() * 260, "seagull")
+      for (let i = 0; i < 18; i++) {
+        const gull = this.add.image(180 + Math.random() * 5100, 130 + Math.random() * 760, "seagull")
           .setScale(0.65)
           .setAlpha(0.82)
           .setDepth(60);
@@ -372,8 +441,8 @@
       if (input.left) vx -= PLAYER_SPEED;
       if (input.right) vx += PLAYER_SPEED;
       this.player.setVelocity(vx, vy);
-      this.player.x = Phaser.Math.Clamp(this.player.x, 80, 1250);
-      this.player.y = Phaser.Math.Clamp(this.player.y, 430, 1010);
+      this.player.x = Phaser.Math.Clamp(this.player.x, 120, 5320);
+      this.player.y = Phaser.Math.Clamp(this.player.y, 560, 3520);
     }
 
     moveNpcs() {
